@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FPL Gameweek Hub</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #101827;
+            color: white;
+        }
+
+        header {
+            background: #202d40;
+            padding: 25px 15px;
+            text-align: center;
+            border-bottom: 3px solid #24e6a4;
+        }
+
+        header h1 {
+            margin: 0;
+            color: #24e6a4;
+            font-size: 28px;
+        }
+
+        header p {
+            color: #d2d8e3;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            padding: 20px 15px;
+        }
+
+        .card {
+            background: #202d40;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: #24e6a4;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 13px;
+            margin: 7px 0;
+            border-radius: 7px;
+            border: none;
+            font-size: 16px;
+        }
+
+        input, select {
+            background: #101827;
+            color: white;
+            border: 1px solid #526176;
+        }
+
+        button {
+            background: #24e6a4;
+            color: #101827;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 25px 10px;
+        }
+
+        .hero .trophy {
+            font-size: 50px;
+        }
+
+        .notice {
+            color: #cbd5e1;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        footer {
+            text-align: center;
+            padding: 25px;
+            color: #aab5c5;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #46546a;
+            text-align: left;
+        }
+
+        th {
+            color: #24e6a4;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #35455c;
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>⚽ FPL GAMEWEEK HUB</h1>
+    <p>Your home for Fantasy Premier League rankings</p>
+    <span class="badge">GLOBAL FPL COMMUNITY</span>
+</header>
+
+<div class="container">
+
+    <section class="card hero">
+        <div class="trophy">🏆</div>
+        <h2>Find the Best FPL Managers</h2>
+        <p>Discover weekly stars, mini-league leaders and top performers.</p>
+    </section>
+
+    <section class="card">
+        <h2>🔎 Find a Mini-League</h2>
+        <p>Enter an FPL mini-league ID or its link.</p>
+
+        <input id="league" type="text"
+               placeholder="Enter mini-league ID or link">
+
+        <label for="gameweek">Select Gameweek</label>
+        <select id="gameweek"></select>
+
+        <button onclick="searchLeague()">Find League Rankings</button>
+        <p id="message" class="notice"></p>
+    </section>
+
+    <section class="card">
+        <h2>🌍 Global Top 50</h2>
+        <p class="notice">
+            The global leaderboard will display the highest-scoring
+            managers worldwide once live FPL data is connected.
+        </p>
+        <button onclick="openFPL()">Visit Official FPL</button>
+    </section>
+
+    <section class="card">
+        <h2>🥇 Manager of the Week</h2>
+        <p id="winner" class="notice">
+            Weekly winners will appear here when verified Gameweek
+            scores are connected.
+        </p>
+    </section>
+
+    <section class="card">
+        <h2>📊 Top 50 Mini-League Managers</h2>
+        <p class="notice">
+            Search for a league above to view its weekly rankings.
+            This section will be connected to real FPL scores in
+            the next development stage.
+        </p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Manager</th>
+                        <th>GW Points</th>
+                    </tr>
+                </thead>
+                <tbody id="rankings">
+                    <tr>
+                        <td colspan="3">Awaiting live FPL data</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+</div>
+
+<footer>
+    <p>FPL Gameweek Hub © 2026</p>
+    <p>Built for FPL managers worldwide 🌍</p>
+</footer>
+
+<script>
+    const selector = document.getElementById("gameweek");
+
+    for (let i = 1; i <= 38; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = "Gameweek " + i;
+        if (i === 6) option.selected = true;
+        selector.appendChild(option);
+    }
+
+    function searchLeague() {
+        const input = document.getElementById("league").value.trim();
+        const message = document.getElementById("message");
+
+        if (!input) {
+            message.textContent =
+                "Please enter a mini-league ID or link first.";
+            return;
+        }
+
+        let leagueId = input;
+
+        const match = input.match(/leagues\/(\d+)/i);
+
+        if (match) {
+            leagueId = match[1];
+        }
+
+        if (!/^\d+$/.test(leagueId)) {
+            message.textContent =
+                "Please enter a valid numeric league ID or an FPL league link.";
+            return;
+        }
+
+        message.innerHTML =
+            "League ID: " + leagueId +
+            "<br>Selected Gameweek: " + selector.value +
+            '<br><a style="color:#24e6a4" href="https://fantasy.premierleague.com/leagues/' +
+            leagueId + '/standings/c" target="_blank" rel="noopener">' +
+            "Open this league on official FPL</a>" +
+            "<br>Live weekly rankings will be added in the next stage.";
+    }
+
+    function openFPL() {
+        window.open(
+            "https://fantasy.premierleague.com/",
+            "_blank",
+            "noopener"
+        );
+    }
+</script>
+
+</body>
+          </html>
