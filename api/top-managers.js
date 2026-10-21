@@ -1,59 +1,73 @@
 export default async function handler(req, res) {
+  res.setHeader("Cache-Control", "no-store");
+
+  if (req.method !== "GET") {
+    return res.status(405).json({
+      success: false,
+      error: "Method not allowed"
+    });
+  }
+
+  const leagueId = String(req.query.id || "").trim();
+  const page = Math.max(
+    1,
+    Math.min(100, Number.parseInt(req.query.page || "1", 10) || 1)
+  );
+
+  if (!/^\d+$/.test(leagueId)) {
+    return res.status(400).json({
+      success: false,
+      error: "Enter a valid numeric FPL league ID."
+    });
+  }
+
   try {
-    const pages = [1, 2];
-    const allManagers = [];
+    const url =
+      "https://fantasy.premierleague.com/api/leagues-classic/" +
+      leagueId +
+      "/standings/?page_standings=" +
+      page;
 
-    for (const page of pages) {
-      const response = await fetch(
-        `https://fantasy.premierleague.com/api/leagues-classic/314/standings/?page=${page}`
-      );
-
-      if (!response.ok) {
-        throw new Error(`FPL API returned status ${response.status}`);
+    const response = await fetch(url, {
+      headers: {
+        "User-Agent": "FPL-Gameweek-Hub/1.0",
+        "Accept": "application/json"
       }
+    });
 
-      const data = await response.json();
-      const managers = data?.standings?.results ?? [];
-
-      allManagers.push(...managers);
+    if (!response.ok) {
+      return res.status(response.status).json({
+        success: false,
+        error:
+          response.status === 404
+            ? "League not found. Check the league ID."
+            : "The official FPL service could not return the standings."
+      });
     }
 
-    // Remove duplicate entries using each manager's unique FPL ID.
-    const uniqueManagers = [
-      ...new Map(
-        allManagers.map(manager => [manager.entry, manager])
-      ).values()
-    ];
+    const data = await response.json();
+    const standings = data.standings || {};
 
-    // Sort by gameweek points, highest first.
-    uniqueManagers.sort(
-      (a, b) => b.event_total - a.event_total
-    );
-
-    const top50 = uniqueManagers.slice(0, 50).map((manager, index) => ({
-      rank: index + 1,
-      manager: manager.player_name,
-      team: manager.entry_name,
-      gwPoints: manager.event_total,
-      totalPoints: manager.total,
-      entry: manager.entry
+    const managers = (standings.results || []).map((item) => ({
+      rank: item.rank,
+      manager: item.player_name,
+      team: item.entry_name,
+      gwPoints: item.event_total,
+      totalPoints: item.total,
+      entry: item.entry
     }));
-
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=300");
 
     return res.status(200).json({
       success: true,
-      updated: new Date().toISOString(),
-      managers: top50
+      league: data.league || {},
+      page: page,
+      hasNext: Boolean(standings.has_next),
+      managers: managers
     });
-
   } catch (error) {
-    console.error("Top managers API error:", error);
-
     return res.status(500).json({
       success: false,
-      error: "Failed to fetch FPL data"
+      error: "Unable to retrieve the league standings. Please try again."
     });
   }
 }
