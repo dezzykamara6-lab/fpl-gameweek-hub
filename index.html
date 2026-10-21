@@ -3,10 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <title>FPL Gameweek Hub</title>
 
 <style>
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -16,124 +19,116 @@ body {
   font-family: Arial, sans-serif;
 }
 
-.container { max-width: 750px; margin: auto; }
-
-header { text-align: center; padding: 20px 0; }
-
-h1 { color: #22e6a8; font-size: 27px; }
-h2 { font-size: 19px; margin-top: 0; }
-
-p {
-  color: #b8c4d5;
-  line-height: 1.5;
-  font-size: 14px;
+.container {
+  max-width: 950px;
+  margin: auto;
 }
 
-.badge {
-  display: inline-block;
-  padding: 7px 12px;
-  border-radius: 20px;
-  background: #203c39;
-  color: #65f5c0;
-  font-size: 11px;
+h1, h2 {
+  color: #35e0b2;
 }
 
 .card {
-  background: #1b2638;
-  border: 1px solid #2d3b50;
-  border-radius: 14px;
-  padding: 17px;
-  margin: 16px 0;
+  background: #1c293b;
+  padding: 18px;
+  margin: 18px 0;
+  border-radius: 12px;
 }
 
 input, select, button {
   width: 100%;
-  padding: 13px;
-  margin-top: 10px;
-  border-radius: 8px;
+  padding: 12px;
+  margin: 7px 0;
+  border-radius: 7px;
+  border: none;
   font-size: 15px;
 }
 
 input, select {
-  background: #101827;
-  border: 1px solid #45536a;
-  color: white;
+  background: #f4f7fb;
+  color: #111827;
 }
 
 button {
-  background: #22e6a8;
-  color: #10251f;
+  background: #35e0b2;
+  color: #101827;
   font-weight: bold;
-  border: none;
   cursor: pointer;
 }
 
-button:disabled { opacity: 0.6; }
-
-.secondary { background: #34445c; color: white; }
-
-.status {
-  margin-top: 12px;
-  color: #b8c4d5;
-  font-size: 13px;
-  overflow-wrap: anywhere;
+button:disabled {
+  opacity: 0.6;
 }
 
-.manager {
+.secondary {
+  background: #33445c;
+  color: white;
+}
+
+.league-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  padding: 13px 0;
-  border-bottom: 1px solid #344258;
+  gap: 8px;
+  margin: 8px 0;
 }
 
-.manager:last-child { border-bottom: none; }
-.manager-info { min-width: 0; }
-
-.manager-name {
-  font-weight: bold;
-  overflow-wrap: anywhere;
+.league-item button {
+  margin: 0;
 }
 
-.team-name {
-  color: #aab8cb;
-  font-size: 12px;
-  margin-top: 5px;
-  overflow-wrap: anywhere;
+.league-item .remove {
+  background: #d94c58;
+  color: white;
+  width: 90px;
 }
 
-.points { text-align: right; flex-shrink: 0; }
-
-.gw-points {
-  color: #22e6a8;
-  font-size: 19px;
-  font-weight: bold;
+.table-wrap {
+  overflow-x: auto;
 }
 
-.total-points {
-  color: #aab8cb;
-  font-size: 11px;
-  margin-top: 4px;
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+  min-width: 530px;
 }
 
-.winner-label {
-  color: #22e6a8;
-  font-size: 12px;
-  font-weight: bold;
-  margin-bottom: 8px;
+th, td {
+  padding: 11px 8px;
+  border-bottom: 1px solid #3b4b61;
+  text-align: left;
+}
+
+th {
+  color: #35e0b2;
+}
+
+.message {
+  padding: 10px;
+  border-radius: 7px;
+  background: #293a50;
+  margin-top: 10px;
+}
+
+.winner {
+  background: #263d42;
+  padding: 15px;
+  border-radius: 9px;
+  margin-top: 12px;
+}
+
+.small {
+  color: #bac7d8;
+  font-size: 13px;
+}
+
+a {
+  color: #35e0b2;
 }
 
 footer {
   text-align: center;
-  color: #8493a8;
-  font-size: 12px;
+  color: #bac7d8;
   padding: 20px 0;
-}
-
-@media (max-width: 380px) {
-  body { padding: 9px; }
-  .card { padding: 13px; }
 }
 </style>
 </head>
@@ -143,295 +138,348 @@ footer {
 
 <header>
   <h1>⚽ FPL Gameweek Hub</h1>
-  <div class="badge">GLOBAL FPL COMMUNITY</div>
-  <p>Your FPL leagues and gameweek leaderboard in one place.</p>
+  <p>Check Gameweek scores and discover the top managers in your mini-leagues.</p>
 </header>
 
 <section class="card">
-  <h2>🔎 Find Your Mini-League</h2>
-  <p>Enter your FPL mini-league ID to view managers and standings.</p>
+  <h2>🏆 My Mini-Leagues</h2>
 
-  <input id="league" type="text" placeholder="Enter your mini-league ID">
+  <label for="leagueName">Mini-league name (optional)</label>
+  <input id="leagueName" placeholder="e.g. Friends League">
 
-  <button id="searchButton" onclick="searchLeague()">Search League</button>
+  <label for="leagueId">Mini-league ID</label>
+  <input id="leagueId" type="number" placeholder="Enter your league ID">
 
-  <div id="leagueMessage" class="status" aria-live="polite"></div>
-  <div id="leagueDetails"></div>
-  <div id="leagueManagers"></div>
-
-  <button id="loadMoreButton" class="secondary"
-    style="display:none" onclick="loadMoreManagers()">
-    Load More Managers
+  <button id="addLeagueBtn" onclick="addLeague()">
+    Add Mini-League
   </button>
+
+  <div id="savedLeagues"></div>
+
+  <p class="small">
+    Your saved leagues are stored in this browser on this device.
+  </p>
 </section>
 
 <section class="card">
-  <h2>🏆 Top Gameweek Scores</h2>
-  <p>Select a Gameweek to rank managers by the points they scored that week.</p>
+  <h2>📅 Choose Your Gameweek</h2>
 
   <label for="gameweek">Select Gameweek</label>
-  <select id="gameweek" onchange="loadManagers()"></select>
+  <select id="gameweek"></select>
 
-  <button id="refreshButton" onclick="loadManagers()">
-    🔄 Refresh Leaderboard
+  <label for="leagueSelect">Choose Mini-League</label>
+  <select id="leagueSelect">
+    <option value="">Add a mini-league first</option>
+  </select>
+
+  <button id="searchBtn" onclick="loadManagers()">
+    Search Gameweek Results
   </button>
 
-  <div id="updated" class="status"></div>
-  <div id="leaderboard" class="status" aria-live="polite">
-    Loading managers...
+  <div id="status" class="message">
+    Add a mini-league and choose a Gameweek.
   </div>
 </section>
 
 <section class="card">
   <h2>🥇 Manager of the Week</h2>
-  <p id="winnerGameweek">Selected Gameweek</p>
-  <div id="managerOfWeek">Loading results...</div>
+  <div id="winner" class="winner">
+    Your Gameweek winner will appear here.
+  </div>
+</section>
+
+<section class="card">
+  <h2>📊 Mini-League Rankings</h2>
+  <div id="leagueTitle"></div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Manager</th>
+          <th>Team</th>
+          <th>GW Points</th>
+          <th>Total Points</th>
+        </tr>
+      </thead>
+      <tbody id="managerRows">
+        <tr>
+          <td colspan="5">Choose a league and Gameweek.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </section>
 
 <section class="card">
   <h2>🌍 Official FPL</h2>
-  <p>Visit the official website to manage your Fantasy Premier League team.</p>
-  <button class="secondary" onclick="openFPL()">Open Official FPL</button>
+  <p>Visit the official Fantasy Premier League website.</p>
+  <a href="https://fantasy.premierleague.com/" target="_blank"
+     rel="noopener noreferrer">
+    Open Fantasy Premier League
+  </a>
 </section>
 
 <footer>
-  FPL Gameweek Hub<br><br>
-  Not affiliated with the official Fantasy Premier League.
+  FPL Gameweek Hub
 </footer>
 
 </div>
 
 <script>
-let currentLeagueId = "";
-let currentPage = 0;
-let loadingMore = false;
-let leaderboardRequest = 0;
+const STORAGE_KEY = "fpl-gameweek-hub-leagues-v1";
 
 const gameweekSelect = document.getElementById("gameweek");
+const leagueSelect = document.getElementById("leagueSelect");
 
-for (let gw = 1; gw <= 38; gw++) {
+let savedLeagues = [];
+
+try {
+  savedLeagues = JSON.parse(
+    localStorage.getItem(STORAGE_KEY) || "[]"
+  );
+
+  if (!Array.isArray(savedLeagues)) {
+    savedLeagues = [];
+  }
+} catch {
+  savedLeagues = [];
+}
+
+for (let week = 1; week <= 38; week++) {
   const option = document.createElement("option");
-  option.value = gw;
-  option.textContent = "Gameweek " + gw;
+  option.value = week;
+  option.textContent = "Gameweek " + week;
   gameweekSelect.appendChild(option);
 }
 
-function createManagerRow(manager, showRank = true) {
-  const row = document.createElement("div");
-  row.className = "manager";
-
-  const info = document.createElement("div");
-  info.className = "manager-info";
-
-  const name = document.createElement("div");
-  name.className = "manager-name";
-  name.textContent =
-    (showRank ? manager.rank + ". " : "") +
-    (manager.manager || "Unknown manager");
-
-  const team = document.createElement("div");
-  team.className = "team-name";
-  team.textContent = manager.team || "Unknown team";
-
-  info.append(name, team);
-
-  const points = document.createElement("div");
-  points.className = "points";
-
-  const gwPoints = document.createElement("div");
-  gwPoints.className = "gw-points";
-  gwPoints.textContent = (manager.gwPoints ?? "—") + " pts";
-
-  const total = document.createElement("div");
-  total.className = "total-points";
-  total.textContent = "Overall: " + (manager.totalPoints ?? "—");
-
-  points.append(gwPoints, total);
-  row.append(info, points);
-
-  return row;
+function saveLeagues() {
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(savedLeagues)
+  );
 }
 
-async function searchLeague() {
-  const input = document.getElementById("league").value.trim();
-  const message = document.getElementById("leagueMessage");
-  const details = document.getElementById("leagueDetails");
-  const managersBox = document.getElementById("leagueManagers");
-  const moreButton = document.getElementById("loadMoreButton");
-  const searchButton = document.getElementById("searchButton");
+function renderLeagues() {
+  const savedList = document.getElementById("savedLeagues");
+  const previousSelection = leagueSelect.value;
 
-  let id = input;
-  const match = input.match(/\/leagues\/(\d+)/i);
-  if (match) id = match[1];
+  savedList.replaceChildren();
+  leagueSelect.replaceChildren();
 
-  if (!/^\d+$/.test(id)) {
-    message.textContent = "Please enter a valid numeric league ID.";
+  if (savedLeagues.length === 0) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "Add a mini-league first";
+    leagueSelect.appendChild(option);
+
+    savedList.textContent = "No saved mini-leagues yet.";
     return;
   }
 
-  currentLeagueId = id;
-  currentPage = 0;
-  loadingMore = false;
-  details.replaceChildren();
-  managersBox.replaceChildren();
-  moreButton.style.display = "none";
+  savedLeagues.forEach(league => {
+    const row = document.createElement("div");
+    row.className = "league-item";
 
-  searchButton.disabled = true;
-  message.textContent = "Loading league standings...";
+    const chooseButton = document.createElement("button");
+    chooseButton.className = "secondary";
+    chooseButton.textContent =
+      league.name + " (ID: " + league.id + ")";
 
-  try {
-    await fetchLeaguePage(1, false);
-  } finally {
-    searchButton.disabled = false;
+    chooseButton.onclick = () => {
+      leagueSelect.value = league.id;
+      loadManagers();
+    };
+
+    const removeButton = document.createElement("button");
+    removeButton.className = "remove";
+    removeButton.textContent = "Remove";
+
+    removeButton.onclick = () => {
+      savedLeagues = savedLeagues.filter(
+        item => item.id !== league.id
+      );
+
+      saveLeagues();
+      renderLeagues();
+
+      document.getElementById("managerRows").replaceChildren();
+      document.getElementById("leagueTitle").textContent = "";
+      document.getElementById("winner").textContent =
+        "Your Gameweek winner will appear here.";
+      document.getElementById("status").textContent =
+        "Mini-league removed. Choose another league.";
+    };
+
+    row.append(chooseButton, removeButton);
+    savedList.appendChild(row);
+
+    const option = document.createElement("option");
+    option.value = league.id;
+    option.textContent = league.name + " (ID: " + league.id + ")";
+    leagueSelect.appendChild(option);
+  });
+
+  if (savedLeagues.some(item => item.id === previousSelection)) {
+    leagueSelect.value = previousSelection;
   }
 }
 
-async function fetchLeaguePage(page, append) {
-  const message = document.getElementById("leagueMessage");
-  const details = document.getElementById("leagueDetails");
-  const managersBox = document.getElementById("leagueManagers");
-  const moreButton = document.getElementById("loadMoreButton");
+function addLeague() {
+  const id = document.getElementById("leagueId").value.trim();
+  const nameInput = document.getElementById("leagueName").value.trim();
+
+  if (!/^\d+$/.test(id)) {
+    alert("Please enter a valid numeric mini-league ID.");
+    return;
+  }
+
+  if (savedLeagues.some(league => league.id === id)) {
+    alert("This mini-league is already saved.");
+    return;
+  }
+
+  const name = nameInput || ("Mini-League " + id);
+
+  savedLeagues.push({ id, name });
+  saveLeagues();
+
+  document.getElementById("leagueId").value = "";
+  document.getElementById("leagueName").value = "";
+
+  renderLeagues();
+  leagueSelect.value = id;
+
+  document.getElementById("status").textContent =
+    "Mini-league saved. Searching for its standings...";
+
+  loadManagers();
+}
+
+async function loadManagers() {
+  const leagueId = leagueSelect.value;
+  const gameweek = gameweekSelect.value;
+
+  const status = document.getElementById("status");
+  const winner = document.getElementById("winner");
+  const rows = document.getElementById("managerRows");
+  const title = document.getElementById("leagueTitle");
+  const button = document.getElementById("searchBtn");
+
+  if (!leagueId) {
+    status.textContent = "Please add and select a mini-league first.";
+    return;
+  }
+
+  status.textContent = "Loading Gameweek results...";
+  winner.textContent = "Calculating the winner...";
+  title.textContent = "";
+  rows.replaceChildren();
+
+  const loadingRow = document.createElement("tr");
+  const loadingCell = document.createElement("td");
+  loadingCell.colSpan = 5;
+  loadingCell.textContent = "Loading managers...";
+  loadingRow.appendChild(loadingCell);
+  rows.appendChild(loadingRow);
+
+  button.disabled = true;
 
   try {
     const response = await fetch(
-      "/api/league?id=" + encodeURIComponent(currentLeagueId) +
-      "&page=" + page,
-      { cache: "no-store" }
+      "/api/top-managers?leagueId=" +
+      encodeURIComponent(leagueId) +
+      "&gw=" +
+      encodeURIComponent(gameweek)
     );
 
     const data = await response.json();
 
     if (!response.ok || !data.success) {
-      throw new Error(data.error || "Unable to load league.");
+      throw new Error(data.error || "Could not load results.");
     }
 
-    if (!append) {
-      details.replaceChildren();
-      managersBox.replaceChildren();
-
-      const heading = document.createElement("h3");
-      heading.textContent = data.league.name || "Mini-League Standings";
-      details.appendChild(heading);
-
-      const description = document.createElement("p");
-      description.textContent = "League ID: " + currentLeagueId;
-      details.appendChild(description);
-    }
-
-    if (!data.managers || data.managers.length === 0) {
-      message.textContent = "No managers were returned for this league.";
-      moreButton.style.display = "none";
+    if (!data.finished) {
+      status.textContent = data.message;
+      winner.textContent = "This Gameweek is not finished yet.";
+      rows.replaceChildren();
       return;
     }
 
-    data.managers.forEach(manager => {
-      managersBox.appendChild(createManagerRow(manager));
+    const selectedLeague = savedLeagues.find(
+      item => item.id === leagueId
+    );
+
+    title.textContent =
+      (data.league || selectedLeague?.name || "Mini-League") +
+      " — Gameweek " + gameweek;
+
+    const managers = data.managers || [];
+
+    if (managers.length === 0) {
+      status.textContent = "No manager scores were available.";
+      winner.textContent = "No winner available.";
+      rows.replaceChildren();
+      return;
+    }
+
+    status.textContent =
+      "Loaded " + managers.length +
+      " managers for Gameweek " + gameweek + ".";
+
+    winner.textContent = "";
+
+    const top = managers[0];
+    const winnerTitle = document.createElement("h3");
+    winnerTitle.textContent = "🏆 " + top.manager;
+
+    const winnerDetails = document.createElement("p");
+    winnerDetails.textContent =
+      top.team + " scored " + top.gwPoints +
+      " points in Gameweek " + gameweek + ".";
+
+    winner.append(winnerTitle, winnerDetails);
+
+    rows.replaceChildren();
+
+    managers.forEach(manager => {
+      const tr = document.createElement("tr");
+
+      [
+        manager.rank,
+        manager.manager,
+        manager.team,
+        manager.gwPoints,
+        manager.totalPoints
+      ].forEach(value => {
+        const td = document.createElement("td");
+        td.textContent = value ?? "—";
+        tr.appendChild(td);
+      });
+
+      rows.appendChild(tr);
     });
 
-    currentPage = page;
-    message.textContent = "Showing league managers.";
-    moreButton.style.display = data.hasNext ? "block" : "none";
-
   } catch (error) {
-    message.textContent = error.message;
-  }
-}
+    status.textContent = error.message;
+    winner.textContent = "Unable to identify the winner.";
+    rows.replaceChildren();
 
-async function loadMoreManagers() {
-  if (loadingMore || !currentLeagueId) return;
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 5;
+    td.textContent = error.message;
+    tr.appendChild(td);
+    rows.appendChild(tr);
 
-  loadingMore = true;
-  const button = document.getElementById("loadMoreButton");
-  button.disabled = true;
-  button.textContent = "Loading...";
-
-  try {
-    await fetchLeaguePage(currentPage + 1, true);
   } finally {
-    loadingMore = false;
     button.disabled = false;
-    button.textContent = "Load More Managers";
   }
 }
 
-async function loadManagers() {
-  const requestId = ++leaderboardRequest;
-  const gameweek = gameweekSelect.value;
-  const box = document.getElementById("leaderboard");
-  const updated = document.getElementById("updated");
-  const winnerBox = document.getElementById("managerOfWeek");
-  const winnerGameweek = document.getElementById("winnerGameweek");
-  const refreshButton = document.getElementById("refreshButton");
-
-  box.textContent = "Loading Gameweek " + gameweek + " scores...";
-  updated.textContent = "";
-  winnerBox.textContent = "";
-  winnerGameweek.textContent = "Gameweek " + gameweek;
-  refreshButton.disabled = true;
-
-  try {
-    const response = await fetch(
-      "/api/top-managers?gw=" + encodeURIComponent(gameweek),
-      { cache: "no-store" }
-    );
-
-    const data = await response.json();
-
-    if (requestId !== leaderboardRequest) return;
-
-    if (!response.ok || !data.success ||
-        !Array.isArray(data.managers)) {
-      throw new Error(data.error || "Leaderboard data is unavailable.");
-    }
-
-    box.replaceChildren();
-
-    if (data.managers.length === 0) {
-      box.textContent = "No managers found for this Gameweek.";
-      winnerBox.textContent = "No results available.";
-      return;
-    }
-
-    const sortedManagers = [...data.managers].sort(
-      (a, b) => (b.gwPoints ?? -1) - (a.gwPoints ?? -1)
-    );
-
-    sortedManagers.forEach((manager, index) => {
-      const rankedManager = { ...manager, rank: index + 1 };
-      box.appendChild(createManagerRow(rankedManager));
-    });
-
-    updated.textContent =
-      "Showing Gameweek " + gameweek + " • " +
-      sortedManagers.length + " managers";
-
-    const best = sortedManagers[0];
-    const winnerLabel = document.createElement("div");
-    winnerLabel.className = "winner-label";
-    winnerLabel.textContent =
-      "🏆 TOP SCORE — GAMEWEEK " + gameweek;
-
-    winnerBox.append(
-      winnerLabel,
-      createManagerRow(best, false)
-    );
-
-  } catch (error) {
-    if (requestId !== leaderboardRequest) return;
-    box.textContent = error.message;
-    winnerBox.textContent = "Manager of the Week is unavailable.";
-  } finally {
-    if (requestId === leaderboardRequest) {
-      refreshButton.disabled = false;
-    }
-  }
-}
-
-function openFPL() {
-  window.open("https://fantasy.premierleague.com/", "_blank");
-}
-
-loadManagers();
+renderLeagues();
 </script>
+
 </body>
 </html>
