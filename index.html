@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FPL Gameweek Hub</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0b1120; color: #e2e8f0; }
+header { background: #0f172a; padding: 28px 16px; text-align: center; border-bottom: 3px solid #22c55e; }
+header h1 { color: #22c55e; font-size: 24px; margin-bottom: 6px; }
+header p { color: #94a3b8; font-size: 14px; }
+.badge { display: inline-block; background: #1e293b; color: #22c55e; padding: 5px 12px; border-radius: 20px; font-size: 12px; margin-top: 10px; }
+.container { max-width: 600px; margin: 0 auto; padding: 16px; }
+.card { background: #1e293b; border-radius: 14px; padding: 18px; margin-bottom: 16px; border: 1px solid #334155; }
+.card h2 { color: #22c55e; font-size: 17px; margin-bottom: 8px; }
+.hero { text-align: center; padding: 24px 12px; }
+.hero .icon { font-size: 42px; margin-bottom: 8px; }
+input, select, button { width: 100%; padding: 13px; margin: 8px 0; border-radius: 10px; border: none; font-size: 15px; }
+input, select { background: #0f172a; color: white; border: 1px solid #334155; }
+button { background: #22c55e; color: #0f172a; font-weight: 700; }
+.secondary { background: #334155; color: #e2e8f0; }
+.notice { color: #94a3b8; font-size: 13px; line-height: 1.5; }
+.message { margin-top: 12px; padding: 10px; background: #0f172a; border-radius: 8px; font-size: 13px; display: none; }
+.message.show { display: block; }
+.message a { color: #22c55e; }
+footer { text-align: center; padding: 24px; color: #64748b; font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+<h1>⚽ FPL Gameweek Hub</h1>
+<p>Your home for Fantasy Premier League rankings</p>
+<div class="badge">GLOBAL FPL COMMUNITY</div>
+</header>
+<div class="container">
+<section class="card hero">
+<div class="icon">🏆</div>
+<h2>Find the Best FPL Managers</h2>
+<p class="notice">Search any mini-league and discover weekly stars.</p>
+</section>
+<section class="card">
+<h2>🔎 Find a Mini-League</h2>
+<p class="notice">Paste a league link or type the league ID.</p>
+<input id="league" type="text" placeholder="League ID or full FPL link">
+<select id="gameweek"></select>
+<button onclick="searchLeague()">Find League Rankings</button>
+<div id="message" class="message"></div>
+</section>
+<section class="card">
+<h2>🌍 Global Top Managers</h2>
+<p class="notice">Live global rankings coming soon.</p>
+<button class="secondary" onclick="openFPL()">Open Official FPL</button>
+</section>
+<section class="card">
+<h2>🥇 Manager of the Week</h2>
+<p class="notice">Top managers will appear here once live data is connected.</p>
+</section>
+</div>
+<footer>
+<p>FPL Gameweek Hub © 2026</p>
+<p>Built for FPL managers worldwide</p>
+</footer>
+<script>
+const selector = document.getElementById("gameweek");
+for (let i = 1; i <= 38; i++) {
+  const opt = document.createElement("option");
+  opt.value = i;
+  opt.textContent = "Gameweek " + i;
+  if (i === 8) opt.selected = true;
+  selector.appendChild(opt);
+}
+function searchLeague() {
+  const input = document.getElementById("league").value.trim();
+  const message = document.getElementById("message");
+  if (!input) {
+    message.className = "message show";
+    message.innerHTML = "Please enter a league ID or link.";
+    return;
+  }
+  let leagueId = input;
+  const match = input.match(/leagues\/(\d+)/i);
+  if (match) leagueId = match[1];
+  if (!/^\d+$/.test(leagueId)) {
+    message.className = "message show";
+    message.innerHTML = "Please enter a valid league ID or FPL link.";
+    return;
+  }
+  message.className = "message show";
+  message.innerHTML = "League: <strong>" + leagueId + "</strong><br>Gameweek: " + selector.value +
+    '<br><br><a href="https://fantasy.premierleague.com/leagues/' + leagueId + '/standings/c" target="_blank">→ Open rankings on official FPL</a>';
+}
+function openFPL() {
+  window.open("https://fantasy.premierleague.com/", "_blank");
+}
+</script>
+</body>
+</html>
