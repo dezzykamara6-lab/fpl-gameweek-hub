@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>FPL Gameweek Hub</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: #101827;
+  color: #ffffff;
+  font-family: Arial, sans-serif;
+}
+
+.container {
+  max-width: 700px;
+  margin: auto;
+}
+
+header {
+  text-align: center;
+  padding: 18px 5px;
+}
+
+header h1 {
+  margin: 0 0 10px;
+  color: #22e6a8;
+  font-size: 27px;
+}
+
+.badge {
+  display: inline-block;
+  background: #203c39;
+  color: #65f5c0;
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: bold;
+}
+
+.card {
+  background: #1b2638;
+  border: 1px solid #2d3b50;
+  border-radius: 14px;
+  padding: 18px;
+  margin: 16px 0;
+}
+
+h2 {
+  margin-top: 0;
+  font-size: 19px;
+}
+
+p {
+  color: #b8c4d5;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+input, select, button {
+  width: 100%;
+  padding: 13px;
+  margin-top: 10px;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+input, select {
+  background: #101827;
+  color: white;
+  border: 1px solid #45536a;
+}
+
+button {
+  background: #22e6a8;
+  color: #10251f;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:active {
+  opacity: 0.8;
+}
+
+.secondary {
+  background: #34445c;
+  color: white;
+}
+
+.status {
+  font-size: 13px;
+  margin-top: 12px;
+  overflow-wrap: anywhere;
+}
+
+.manager {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 0;
+  border-bottom: 1px solid #344258;
+}
+
+.manager:last-child {
+  border-bottom: none;
+}
+
+.manager-info {
+  min-width: 0;
+}
+
+.manager-name {
+  font-weight: bold;
+  overflow-wrap: anywhere;
+}
+
+.team-name {
+  color: #aab8cb;
+  font-size: 12px;
+  margin-top: 5px;
+  overflow-wrap: anywhere;
+}
+
+.points {
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.gw-points {
+  color: #22e6a8;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.total-points {
+  color: #aab8cb;
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+footer {
+  text-align: center;
+  color: #8493a8;
+  font-size: 12px;
+  padding: 20px 0;
+}
+
+a {
+  color: #22e6a8;
+}
+
+@media (max-width: 380px) {
+  body {
+    padding: 10px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  header h1 {
+    font-size: 23px;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+  <h1>⚽ FPL Gameweek Hub</h1>
+  <div class="badge">GLOBAL FPL COMMUNITY</div>
+  <p>Your FPL leagues and gameweek leaderboard in one place.</p>
+</header>
+
+<section class="card">
+  <h2>🔎 Find Your Mini-League</h2>
+
+  <p>
+    Enter your FPL mini-league ID or a league link.
+    You can find the ID in your league's official FPL URL.
+  </p>
+
+  <input
+    id="league"
+    type="text"
+    placeholder="Enter your FPL league ID"
+  >
+
+  <label for="gameweek">Select gameweek</label>
+
+  <select id="gameweek"></select>
+
+  <button onclick="searchLeague()">
+    Search League
+  </button>
+
+  <div id="message" class="status" aria-live="polite"></div>
+</section>
+
+<section class="card">
+  <h2>🏆 Top Gameweek Scores</h2>
+
+  <p>
+    Managers returned by our current data source.
+    These are not verified worldwide rankings.
+  </p>
+
+  <button onclick="loadManagers()">🔄 Refresh Leaderboard</button>
+
+  <div id="updated" class="status"></div>
+
+  <div id="leaderboard" class="status" aria-live="polite">
+    Loading managers...
+  </div>
+</section>
+
+<section class="card">
+  <h2>🥇 Manager of the Week</h2>
+
+  <div id="managerOfWeek">
+    <p>Loading the highest gameweek score...</p>
+  </div>
+</section>
+
+<section class="card">
+  <h2>🌍 Official FPL</h2>
+
+  <p>
+    Visit the official Fantasy Premier League website
+    to manage your team and check your points.
+  </p>
+
+  <button class="secondary" onclick="openFPL()">
+    Open Official FPL
+  </button>
+</section>
+
+<footer>
+  FPL Gameweek Hub · Made for the FPL community
+  <br><br>
+  Not affiliated with the official Fantasy Premier League.
+</footer>
+
+</div>
+
+<script>
+const gameweekSelect = document.getElementById("gameweek");
+
+for (let i = 1; i <= 38; i++) {
+  const option = document.createElement("option");
+  option.value = i;
+  option.textContent = "Gameweek " + i;
+  gameweekSelect.appendChild(option);
+}
+
+// Keep the original default gameweek.
+gameweekSelect.value = "8";
+
+function searchLeague() {
+  const input = document.getElementById("league").value.trim();
+  const message = document.getElementById("message");
+
+  if (!input) {
+    message.textContent = "Please enter your FPL league ID.";
+    return;
+  }
+
+  let leagueId = input;
+
+  // Accept a numeric ID or a link containing /leagues/ID.
+  const match = input.match(/\/leagues\/(\d+)/i);
+
+  if (match) {
+    leagueId = match[1];
+  }
+
+  if (!/^\d+$/.test(leagueId)) {
+    message.textContent =
+      "Invalid league ID. Enter the numbers from your FPL league link.";
+    return;
+  }
+
+  const gameweek = gameweekSelect.value;
+
+  const url =
+    "https://fantasy.premierleague.com/leagues/" +
+    leagueId +
+    "/standings/c?event=" +
+    gameweek;
+
+  message.textContent = "Opening your league standings...";
+
+  window.open(url, "_blank");
+}
+
+function openFPL() {
+  window.open(
+    "https://fantasy.premierleague.com/",
+    "_blank"
+  );
+}
+
+function loadManagers() {
+  const leaderboard = document.getElementById("leaderboard");
+  const updated = document.getElementById("updated");
+  const managerOfWeek = document.getElementById("managerOfWeek");
+
+  leaderboard.textContent = "Loading managers...";
+  updated.textContent = "";
+  managerOfWeek.textContent = "";
+
+  fetch("/api/top-managers", { cache: "no-store" })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error("Unable to load leaderboard.");
+      }
+
+      return response.json();
+    })
+    .then(data => {
+      if (!data.success || !Array.isArray(data.managers)) {
+        throw new Error("Leaderboard data is unavailable.");
+      }
+
+      const managers = data.managers;
+
+      if (managers.length === 0) {
+        leaderboard.textContent = "No managers found yet.";
+        managerOfWeek.textContent = "No results available.";
+        return;
+      }
+
+      leaderboard.replaceChildren();
+
+      managers.forEach((manager, index) => {
+        const row = document.createElement("div");
+        row.className = "manager";
+
+        const info = document.createElement("div");
+        info.className = "manager-info";
+
+        const name = document.createElement("div");
+        name.className = "manager-name";
+        name.textContent =
+          (manager.rank || index + 1) + ". " +
+          (manager.manager || "Unknown manager");
+
+        const team = document.createElement("div");
+        team.className = "team-name";
+        team.textContent = manager.team || "Team name unavailable";
+
+        const points = document.createElement("div");
+        points.className = "points";
+
+        const gwPoints = document.createElement("div");
+        gwPoints.className = "gw-points";
+        gwPoints.textContent = (manager.gwPoints ?? 0) + " pts";
+
+        const totalPoints = document.createElement("div");
+        totalPoints.className = "total-points";
+        totalPoints.textContent =
+          "Total: " + (manager.totalPoints ?? 0);
+
+        info.append(name, team);
+        points.append(gwPoints, totalPoints);
+        row.append(info, points);
+        leaderboard.appendChild(row);
+      });
+
+      if (data.updated) {
+        const date = new Date(data.updated);
+
+        updated.textContent =
+          "Last updated: " + date.toLocaleString();
+      }
+
+      const best = managers.reduce((highest, manager) => {
+        return Number(manager.gwPoints || 0) >
+          Number(highest.gwPoints || 0)
+          ? manager
+          : highest;
+      }, managers[0]);
+
+      managerOfWeek.replaceChildren();
+
+      const winner = document.createElement("div");
+      winner.className = "manager";
+
+      const winnerInfo = document.createElement("div");
+      winnerInfo.className = "manager-info";
+
+      const winnerName = document.createElement("div");
+      winnerName.className = "manager-name";
+      winnerName.textContent = "🏆 " + (best.manager || "Unknown manager");
+
+      const winnerTeam = document.createElement("div");
+      winnerTeam.className = "team-name";
+      winnerTeam.textContent = best.team || "Team name unavailable";
+
+      const winnerPoints = document.createElement("div");
+      winnerPoints.className = "gw-points";
+      winnerPoints.textContent = (best.gwPoints ?? 0) + " pts";
+
+      winnerInfo.append(winnerName, winnerTeam);
+      winner.append(winnerInfo, winnerPoints);
+      managerOfWeek.appendChild(winner);
+    })
+    .catch(error => {
+      leaderboard.textContent =
+        error.message + " Please try refreshing.";
+
+      managerOfWeek.textContent =
+        "Manager of the Week is unavailable right now.";
+    });
+}
+
+loadManagers();
+</script>
+
+</body>
+</html>
