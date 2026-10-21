@@ -8,9 +8,21 @@ export default async function handler(req, res) {
     });
   }
 
+  const leagueId = String(req.query.leagueId || "314");
   const gameweek = Number.parseInt(req.query.gw || "1", 10);
 
-  if (!Number.isInteger(gameweek) || gameweek < 1 || gameweek > 38) {
+  if (!/^\d+$/.test(leagueId)) {
+    return res.status(400).json({
+      success: false,
+      error: "Enter a valid mini-league ID."
+    });
+  }
+
+  if (
+    !Number.isInteger(gameweek) ||
+    gameweek < 1 ||
+    gameweek > 38
+  ) {
     return res.status(400).json({
       success: false,
       error: "Choose a Gameweek between 1 and 38."
@@ -23,75 +35,90 @@ export default async function handler(req, res) {
     );
 
     if (!bootstrapResponse.ok) {
-      throw new Error("Could not retrieve Gameweek information.");
+      throw new Error("Could not load FPL information.");
     }
 
     const bootstrap = await bootstrapResponse.json();
-    const selectedEvent = bootstrap.events.find(
-      event => event.id === gameweek
+
+    const event = bootstrap.events.find(
+      item => item.id === gameweek
     );
 
-    if (!selectedEvent) {
+    if (!event) {
       return res.status(400).json({
         success: false,
-        error: "That Gameweek does not exist."
+        error: "Gameweek not found."
       });
     }
 
-    if (!selectedEvent.finished) {
-      return res.status(400).json({
-        success: false,
-        error: `Gameweek ${gameweek} has not finished yet.`
+    if (!event.finished) {
+      return res.status(200).json({
+        success: true,
+        finished: false,
+        gameweek,
+        message: `Gameweek ${gameweek} has not finished yet.`,
+        managers: []
       });
     }
 
-    const managersMap = new Map();
+    const leagueResponse = await fetch(
+      `https://fantasy.premierleague.com/api/leagues-classic/${leagueId}/standings/?page_standings=1`
+    );
 
-    for (const page of [1, 2]) {
-      const response = await fetch(
-        `https://fantasy.premierleague.com/api/leagues-classic/314/standings/?page_standings=${page}`
-      );
+    if (!leagueResponse.ok) {
+      return res.status(404).json({
+        success: false,
+        error: "Mini-league not found or standings unavailable."
+      });
+    }
 
-      if (!response.ok) {
-        throw new Error("Could not retrieve league standings.");
-      }
+    const leagueData = await leagueResponse.json();
 
-      const data = await response.json();
+    const league = leagueData.league;
+    const results = leagueData.standings?.results || [];
 
-      for (const item of data.standings?.results || []) {
-        managersMap.set(item.entry, {
-          manager: item.player_name,
-          team: item.entry_name,
-          entry: item.entry,
-          totalPoints: item.total
-        });
-      }
+    if (!league || results.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "No managers found in this mini-league."
+      });
     }
 
     const managers = await Promise.all(
-      Array.from(managersMap.values()).map(async manager => {
-        const response = await fetch(
-          `https://fantasy.premierleague.com/api/entry/${manager.entry}/event/${gameweek}/picks/`
-        );
+      results.map(async item => {
+        try {
+          const response = await fetch(
+            `https://fantasy.premierleague.com/api/entry/${item.entry}/event/${gameweek}/picks/`
+          );
 
-        if (!response.ok) {
+          if (!response.ok) {
+            return null;
+          }
+
+          const data = await response.json();
+
+          const gwPoints =
+            data.entry_history?.points;
+
+          if (gwPoints == null) {
+            return null;
+          }
+
           return {
-            ...manager,
-            gwPoints: null
+            manager: item.player_name,
+            team: item.entry_name,
+            entry: item.entry,
+            gwPoints,
+            totalPoints: item.total
           };
+        } catch {
+          return null;
         }
-
-        const data = await response.json();
-
-        return {
-          ...manager,
-          gwPoints: data.entry_history?.points ?? null
-        };
       })
     );
 
     const rankedManagers = managers
-      .filter(manager => manager.gwPoints !== null)
+      .filter(Boolean)
       .sort((a, b) => b.gwPoints - a.gwPoints)
       .map((manager, index, array) => ({
         rank:
@@ -104,15 +131,17 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
+      finished: true,
+      league: league.name,
+      leagueId,
       gameweek,
-      gameweekName: `Gameweek ${gameweek}`,
       updated: new Date().toISOString(),
       managers: rankedManagers
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      error: "Unable to load Gameweek results. Please try again."
+      error: "Unable to load results. Please try again."
     });
   }
-             }
+}
