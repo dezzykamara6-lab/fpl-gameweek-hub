@@ -6,9 +6,7 @@
 <title>FPL Gameweek Hub</title>
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -18,25 +16,12 @@ body {
   font-family: Arial, sans-serif;
 }
 
-.container {
-  max-width: 750px;
-  margin: auto;
-}
+.container { max-width: 750px; margin: auto; }
 
-header {
-  text-align: center;
-  padding: 20px 0;
-}
+header { text-align: center; padding: 20px 0; }
 
-h1 {
-  color: #22e6a8;
-  font-size: 27px;
-}
-
-h2 {
-  font-size: 19px;
-  margin-top: 0;
-}
+h1 { color: #22e6a8; font-size: 27px; }
+h2 { font-size: 19px; margin-top: 0; }
 
 p {
   color: #b8c4d5;
@@ -83,10 +68,9 @@ button {
   cursor: pointer;
 }
 
-.secondary {
-  background: #34445c;
-  color: white;
-}
+button:disabled { opacity: 0.6; }
+
+.secondary { background: #34445c; color: white; }
 
 .status {
   margin-top: 12px;
@@ -104,13 +88,8 @@ button {
   border-bottom: 1px solid #344258;
 }
 
-.manager:last-child {
-  border-bottom: none;
-}
-
-.manager-info {
-  min-width: 0;
-}
+.manager:last-child { border-bottom: none; }
+.manager-info { min-width: 0; }
 
 .manager-name {
   font-weight: bold;
@@ -124,10 +103,7 @@ button {
   overflow-wrap: anywhere;
 }
 
-.points {
-  text-align: right;
-  flex-shrink: 0;
-}
+.points { text-align: right; flex-shrink: 0; }
 
 .gw-points {
   color: #22e6a8;
@@ -141,6 +117,13 @@ button {
   margin-top: 4px;
 }
 
+.winner-label {
+  color: #22e6a8;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
 footer {
   text-align: center;
   color: #8493a8;
@@ -149,13 +132,8 @@ footer {
 }
 
 @media (max-width: 380px) {
-  body {
-    padding: 9px;
-  }
-
-  .card {
-    padding: 13px;
-  }
+  body { padding: 9px; }
+  .card { padding: 13px; }
 }
 </style>
 </head>
@@ -171,66 +149,49 @@ footer {
 
 <section class="card">
   <h2>🔎 Find Your Mini-League</h2>
+  <p>Enter your FPL mini-league ID to view managers and standings.</p>
 
-  <p>
-    Enter your FPL mini-league ID to view managers and standings
-    directly on this website.
-  </p>
+  <input id="league" type="text" placeholder="Enter your mini-league ID">
 
-  <input
-    id="league"
-    type="text"
-    placeholder="Enter your mini-league ID"
-  >
-
-  <button id="searchButton" onclick="searchLeague()">
-    Search League
-  </button>
+  <button id="searchButton" onclick="searchLeague()">Search League</button>
 
   <div id="leagueMessage" class="status" aria-live="polite"></div>
-
   <div id="leagueDetails"></div>
-
   <div id="leagueManagers"></div>
 
-  <button
-    id="loadMoreButton"
-    class="secondary"
-    style="display:none"
-    onclick="loadMoreManagers()"
-  >
+  <button id="loadMoreButton" class="secondary"
+    style="display:none" onclick="loadMoreManagers()">
     Load More Managers
   </button>
 </section>
 
 <section class="card">
   <h2>🏆 Top Gameweek Scores</h2>
+  <p>Select a Gameweek to rank managers by the points they scored that week.</p>
 
-  <p>
-    Rankings from our current data source.
-    These are not verified worldwide rankings.
-  </p>
+  <label for="gameweek">Select Gameweek</label>
+  <select id="gameweek" onchange="loadManagers()"></select>
 
-  <button onclick="loadManagers()">🔄 Refresh Leaderboard</button>
+  <button id="refreshButton" onclick="loadManagers()">
+    🔄 Refresh Leaderboard
+  </button>
 
   <div id="updated" class="status"></div>
-  <div id="leaderboard" class="status">Loading managers...</div>
+  <div id="leaderboard" class="status" aria-live="polite">
+    Loading managers...
+  </div>
 </section>
 
 <section class="card">
   <h2>🥇 Manager of the Week</h2>
-  <div id="managerOfWeek">
-    <p>Loading results...</p>
-  </div>
+  <p id="winnerGameweek">Selected Gameweek</p>
+  <div id="managerOfWeek">Loading results...</div>
 </section>
 
 <section class="card">
   <h2>🌍 Official FPL</h2>
   <p>Visit the official website to manage your Fantasy Premier League team.</p>
-
-  <button class="secondary" onclick="openFPL()">
-    Open Official FPL
-  </button>
+  <button class="secondary" onclick="openFPL()">Open Official FPL</button>
 </section>
 
 <footer>
@@ -244,6 +205,16 @@ footer {
 let currentLeagueId = "";
 let currentPage = 0;
 let loadingMore = false;
+let leaderboardRequest = 0;
+
+const gameweekSelect = document.getElementById("gameweek");
+
+for (let gw = 1; gw <= 38; gw++) {
+  const option = document.createElement("option");
+  option.value = gw;
+  option.textContent = "Gameweek " + gw;
+  gameweekSelect.appendChild(option);
+}
 
 function createManagerRow(manager, showRank = true) {
   const row = document.createElement("div");
@@ -254,7 +225,6 @@ function createManagerRow(manager, showRank = true) {
 
   const name = document.createElement("div");
   name.className = "manager-name";
-
   name.textContent =
     (showRank ? manager.rank + ". " : "") +
     (manager.manager || "Unknown manager");
@@ -268,15 +238,15 @@ function createManagerRow(manager, showRank = true) {
   const points = document.createElement("div");
   points.className = "points";
 
-  const gw = document.createElement("div");
-  gw.className = "gw-points";
-  gw.textContent = (manager.gwPoints ?? 0) + " pts";
+  const gwPoints = document.createElement("div");
+  gwPoints.className = "gw-points";
+  gwPoints.textContent = (manager.gwPoints ?? "—") + " pts";
 
   const total = document.createElement("div");
   total.className = "total-points";
-  total.textContent = "Total: " + (manager.totalPoints ?? 0);
+  total.textContent = "Overall: " + (manager.totalPoints ?? "—");
 
-  points.append(gw, total);
+  points.append(gwPoints, total);
   row.append(info, points);
 
   return row;
@@ -291,11 +261,8 @@ async function searchLeague() {
   const searchButton = document.getElementById("searchButton");
 
   let id = input;
-
   const match = input.match(/\/leagues\/(\d+)/i);
-  if (match) {
-    id = match[1];
-  }
+  if (match) id = match[1];
 
   if (!/^\d+$/.test(id)) {
     message.textContent = "Please enter a valid numeric league ID.";
@@ -305,7 +272,6 @@ async function searchLeague() {
   currentLeagueId = id;
   currentPage = 0;
   loadingMore = false;
-
   details.replaceChildren();
   managersBox.replaceChildren();
   moreButton.style.display = "none";
@@ -328,10 +294,8 @@ async function fetchLeaguePage(page, append) {
 
   try {
     const response = await fetch(
-      "/api/league?id=" +
-      encodeURIComponent(currentLeagueId) +
-      "&page=" +
-      page,
+      "/api/league?id=" + encodeURIComponent(currentLeagueId) +
+      "&page=" + page,
       { cache: "no-store" }
     );
 
@@ -350,15 +314,12 @@ async function fetchLeaguePage(page, append) {
       details.appendChild(heading);
 
       const description = document.createElement("p");
-      description.textContent =
-        "League ID: " + currentLeagueId;
+      description.textContent = "League ID: " + currentLeagueId;
       details.appendChild(description);
     }
 
     if (!data.managers || data.managers.length === 0) {
-      if (!append) {
-        message.textContent = "No managers were returned for this league.";
-      }
+      message.textContent = "No managers were returned for this league.";
       moreButton.style.display = "none";
       return;
     }
@@ -368,9 +329,7 @@ async function fetchLeaguePage(page, append) {
     });
 
     currentPage = page;
-    message.textContent =
-      "Showing league managers. Gameweek points are the values returned by FPL.";
-
+    message.textContent = "Showing league managers.";
     moreButton.style.display = data.hasNext ? "block" : "none";
 
   } catch (error) {
@@ -382,7 +341,6 @@ async function loadMoreManagers() {
   if (loadingMore || !currentLeagueId) return;
 
   loadingMore = true;
-
   const button = document.getElementById("loadMoreButton");
   button.disabled = true;
   button.textContent = "Loading...";
@@ -397,53 +355,75 @@ async function loadMoreManagers() {
 }
 
 async function loadManagers() {
+  const requestId = ++leaderboardRequest;
+  const gameweek = gameweekSelect.value;
   const box = document.getElementById("leaderboard");
   const updated = document.getElementById("updated");
   const winnerBox = document.getElementById("managerOfWeek");
+  const winnerGameweek = document.getElementById("winnerGameweek");
+  const refreshButton = document.getElementById("refreshButton");
 
-  box.textContent = "Loading managers...";
+  box.textContent = "Loading Gameweek " + gameweek + " scores...";
   updated.textContent = "";
   winnerBox.textContent = "";
+  winnerGameweek.textContent = "Gameweek " + gameweek;
+  refreshButton.disabled = true;
 
   try {
-    const response = await fetch("/api/top-managers", {
-      cache: "no-store"
-    });
+    const response = await fetch(
+      "/api/top-managers?gw=" + encodeURIComponent(gameweek),
+      { cache: "no-store" }
+    );
 
     const data = await response.json();
 
-    if (!response.ok || !data.success || !Array.isArray(data.managers)) {
-      throw new Error("Leaderboard data is unavailable.");
+    if (requestId !== leaderboardRequest) return;
+
+    if (!response.ok || !data.success ||
+        !Array.isArray(data.managers)) {
+      throw new Error(data.error || "Leaderboard data is unavailable.");
     }
 
     box.replaceChildren();
 
     if (data.managers.length === 0) {
-      box.textContent = "No managers found.";
+      box.textContent = "No managers found for this Gameweek.";
       winnerBox.textContent = "No results available.";
       return;
     }
 
-    data.managers.forEach(manager => {
-      box.appendChild(createManagerRow(manager));
-    });
-
-    if (data.updated) {
-      updated.textContent =
-        "Last updated: " + new Date(data.updated).toLocaleString();
-    }
-
-    const best = data.managers.reduce((highest, manager) =>
-      Number(manager.gwPoints || 0) > Number(highest.gwPoints || 0)
-        ? manager
-        : highest
+    const sortedManagers = [...data.managers].sort(
+      (a, b) => (b.gwPoints ?? -1) - (a.gwPoints ?? -1)
     );
 
-    winnerBox.replaceChildren(createManagerRow(best, false));
+    sortedManagers.forEach((manager, index) => {
+      const rankedManager = { ...manager, rank: index + 1 };
+      box.appendChild(createManagerRow(rankedManager));
+    });
+
+    updated.textContent =
+      "Showing Gameweek " + gameweek + " • " +
+      sortedManagers.length + " managers";
+
+    const best = sortedManagers[0];
+    const winnerLabel = document.createElement("div");
+    winnerLabel.className = "winner-label";
+    winnerLabel.textContent =
+      "🏆 TOP SCORE — GAMEWEEK " + gameweek;
+
+    winnerBox.append(
+      winnerLabel,
+      createManagerRow(best, false)
+    );
 
   } catch (error) {
+    if (requestId !== leaderboardRequest) return;
     box.textContent = error.message;
     winnerBox.textContent = "Manager of the Week is unavailable.";
+  } finally {
+    if (requestId === leaderboardRequest) {
+      refreshButton.disabled = false;
+    }
   }
 }
 
@@ -453,6 +433,5 @@ function openFPL() {
 
 loadManagers();
 </script>
-
 </body>
-  </html>
+</html>
